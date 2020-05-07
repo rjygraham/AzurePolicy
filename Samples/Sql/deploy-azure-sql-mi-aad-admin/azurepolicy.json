@@ -1,0 +1,95 @@
+{
+	"properties": {
+		"mode": "all",
+		"parameters": {
+			"login": {
+				"type": "string",
+				"metadata": {
+					"description": "Login name of the managed instance administrator."
+				}
+			},
+			"sid": {
+				"type": "string",
+				"metadata": {
+					"description": "SID (Azure Active Directory Object ID) of the managed instance administrator."
+				}
+			}
+		},
+		"policyRule": {
+			"if": {
+				"field": "type",
+				"equals": "Microsoft.Sql/managedInstances"
+			},
+			"then": {
+				"effect": "deployIfNotExists",
+				"details": {
+					"type": "Microsoft.Sql/managedInstances/administrators",
+					"existenceCondition": {
+						"allOf": [
+							{
+								"field": "Microsoft.Sql/managedInstances/administrators/ActiveDirectory.administratorType",
+								"equals": "ActiveDirectory"
+							},
+							{
+								"field": "Microsoft.Sql/managedInstances/administrators/ActiveDirectory.login",
+								"equals": "[parameters('login')]"
+							},
+							{
+								"field": "Microsoft.Sql/managedInstances/administrators/ActiveDirectory.sid",
+								"equals": "[parameters('sid')]"
+							}
+						]
+					},
+					"roleDefinitionIds": [
+						"/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+					],
+					"deployment": {
+						"properties": {
+							"mode": "incremental",
+							"template": {
+								"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+								"contentVersion": "1.0.0.0",
+								"parameters": {
+									"serverName": {
+										"type": "string"
+									},
+									"login": {
+										"type": "string"
+									},
+									"sid": {
+										"type": "string"
+									}
+								},
+								"variables": {},
+								"resources": [
+									{
+										"type": "Microsoft.Sql/managedInstances/administrators",
+										"apiVersion": "2017-03-01-preview",
+										"name": "[concat(parameters('serverName'), '/ActiveDirectory')]",
+										"properties": {
+											"administratorType": "activeDirectory",
+											"login": "[parameters('login')]",
+											"sid": "[parameters('sid')]"
+										}
+									}
+								],
+								"outputs": {}
+							},
+							"parameters": {
+								"serverName": {
+									"value": "[field('name')]"
+								},
+								"login": {
+									"value": "[parameters('login')]"
+								},
+								"sid": {
+									"value": "[parameters('sid')]"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

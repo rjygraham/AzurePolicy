@@ -1,0 +1,63 @@
+{
+	"properties": {
+		"mode": "all",
+		"parameters": {
+			"aadTenantId": {
+				"type": "String",
+				"metadata": {
+					"displayName": "AAD Tenant ID",
+					"description": "The tenant ID in which the user, group, or service principal resides."
+				}
+			},
+			"aadObjectId": {
+				"type": "String",
+				"metadata": {
+					"displayName": "AAD Object ID",
+					"description": "The Object ID of the AAD user, group, or service principal to check."
+				}
+			},
+			"keyPermissions": {
+				"type": "array"
+			},
+			"secretPermissions": {
+				"type": "array"
+			},
+			"certificatePermissions": {
+				"type": "array"
+			}
+		},
+		"displayName": "Required KeyVault ACLs",
+		"description": "This policy appends required KeyVault ACLs.",
+		"policyRule": {
+			"if": {
+				"allOf": [
+					{
+						"field": "type",
+						"equals": "Microsoft.KeyVault/vaults"
+					},
+					{
+						"field": "Microsoft.Keyvault/vaults/accessPolicies[*].objectId",
+						"notEquals": "[parameters('aadObjectId')]"
+					}
+				]
+			},
+			"then": {
+				"effect": "append",
+				"details": [
+					{
+						"field": "Microsoft.Keyvault/vaults/accessPolicies[*]",
+						"value": {
+							"tenantId": "[parameters('aadTenantId')]",
+							"objectId": "[parameters('aadObjectId')]",
+							"permissions": {
+								"keys": "[parameters('keyPermissions')]",
+								"secrets": "[parameters('secretPermissions')]",
+								"certificates": "[parameters('certificatePermissions')]"
+							}
+						}
+					}
+				]
+			}
+		}
+	}
+}

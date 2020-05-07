@@ -1,0 +1,58 @@
+{
+    "properties": {
+        "displayName": "Deny Storage Account public endpoint",
+        "mode": "Indexed",
+        "description": "Denies creation of Storage Accounts with public endpoints unless override tag with specific value is present.",
+        "metadata": {
+            "version": "1.0.0",
+            "category": "Tags"
+        },
+        "parameters": {
+            "tagName": {
+                "type": "String",
+                "metadata": {
+                    "displayName": "Override Tag Name",
+                    "description": "Name of the tag to override policy."
+                }
+            },
+            "tagValue": {
+                "type": "String",
+                "metadata": {
+                    "displayName": "Override Tag Value",
+                    "description": "Value of the tag to override policy."
+                }
+            }
+        },
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Storage/storageAccounts"
+                    },
+                    {
+                        "field": "Microsoft.Storage/storageAccounts/networkAcls.defaultAction",
+                        "notEquals": "deny"
+                    },
+                    {
+                        "not": {
+                            "allOf":[
+                                {
+                                    "field": "[concat('tags[', parameters('tagName'), ']')]",
+                                    "exists": "true"
+                                },
+                                {
+                                    "field": "[concat('tags[', parameters('tagName'), ']')]",
+                                    "contains": "[parameters('tagValue')]"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "then": {
+                "effect": "deny"
+            }
+        }
+    }
+}

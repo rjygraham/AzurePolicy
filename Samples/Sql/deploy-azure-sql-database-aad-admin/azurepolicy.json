@@ -1,0 +1,95 @@
+{
+	"properties": {
+		"mode": "all",
+		"parameters": {
+			"login": {
+				"type": "string",
+				"metadata": {
+					"description": "Login name of the managed instance administrator."
+				}
+			},
+			"sid": {
+				"type": "string",
+				"metadata": {
+					"description": "SID (Azure Active Directory Object ID) of the managed instance administrator."
+				}
+			}
+		},
+		"policyRule": {
+			"if": {
+				"field": "type",
+				"equals": "Microsoft.Sql/servers"
+			},
+			"then": {
+				"effect": "deployIfNotExists",
+				"details": {
+					"type": "Microsoft.Sql/servers/administrators",
+					"existenceCondition": {
+						"allOf": [
+							{
+								"field": "Microsoft.Sql/servers/administrators/activeDirectory.administratorType",
+								"equals": "ActiveDirectory"
+							},
+							{
+								"field": "Microsoft.Sql/servers/administrators/activeDirectory.login",
+								"equals": "[parameters('login')]"
+							},
+							{
+								"field": "Microsoft.Sql/servers/administrators/activeDirectory.sid",
+								"equals": "[parameters('sid')]"
+							}
+						]
+					},
+					"roleDefinitionIds": [
+						"/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+					],
+					"deployment": {
+						"properties": {
+							"mode": "incremental",
+							"template": {
+								"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+								"contentVersion": "1.0.0.0",
+								"parameters": {
+									"serverName": {
+										"type": "string"
+									},
+									"login": {
+										"type": "string"
+									},
+									"sid": {
+										"type": "string"
+									}
+								},
+								"variables": {},
+								"resources": [
+									{
+										"type": "Microsoft.Sql/servers/administrators",
+										"apiVersion": "2019-06-01-preview",
+										"name": "[concat(parameters('serverName'), '/ActiveDirectory')]",
+										"properties": {
+											"administratorType": "ActiveDirectory",
+											"login": "[parameters('login')]",
+											"sid": "[parameters('sid')]"
+										}
+									}
+								],
+								"outputs": {}
+							},
+							"parameters": {
+								"serverName": {
+									"value": "[field('name')]"
+								},
+								"login": {
+									"value": "[parameters('login')]"
+								},
+								"sid": {
+									"value": "[parameters('sid')]"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
