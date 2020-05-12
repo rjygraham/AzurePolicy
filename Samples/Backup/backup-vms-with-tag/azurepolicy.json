@@ -56,7 +56,6 @@
                         "/providers/microsoft.authorization/roleDefinitions/5e467623-bb1f-42f4-a55d-6e525e11384b"
                     ],
                     "type": "Microsoft.RecoveryServices/backupprotecteditems",
-                    "resourceGroupName": "[concat(subscription().displayName, parameters('vaultResourceGroupPostfix'))]",
                     "deployment": {
                         "properties": {
                             "mode": "incremental",
@@ -67,41 +66,90 @@
                                     "location": {
                                         "type": "string"
                                     },
-                                    "virtualMachineResourceGroup": {
+                                    "vaultResourceGroupName": {
+                                        "type": "string"
+                                    },
+                                    "virtualMachineResourceGroupName": {
                                         "type": "string"
                                     },
                                     "virtualMachineName": {
                                         "type": "string"
                                     },
                                     "backupPolicyName": {
-                                        "type": "String"
+                                        "type": "string"
                                     }
-                                },
-                                "variables": {
-                                    "backupFabric": "Azure",
-                                    "v2VmType": "Microsoft.Compute/virtualMachines",
-                                    "v2VmContainer": "iaasvmcontainer;iaasvmcontainerv2;",
-                                    "v2Vm": "vm;iaasvmcontainerv2;",
-                                    "locationNameMap": {
-                                        "eastus": "eus",
-                                        "eastus2": "eus2",
-                                        "centralus": "cus",
-                                        "westus": "wus",
-                                        "southcentralus": "scus",
-                                        "westcentralus": "wcus"
-                                    },
-                                    "recoveryServicesVaultName": "[concat(resourceGroup().name, '-', variables('locationNameMap')[parameters('location')], '-RSV')]"
                                 },
                                 "resources": [
                                     {
-                                        "type": "Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems",
-                                        "apiVersion": "2016-06-01",
-                                        "name": "[concat(variables('recoveryServicesVaultName'), '/', variables('backupFabric'), '/', variables('v2VmContainer'), parameters('virtualMachineResourceGroup'), ';', parameters('virtualMachineName'), '/', variables('v2Vm'), parameters('virtualMachineResourceGroup'), ';', parameters('virtualMachineName'))]",
-                                        "location": "[parameters('location')]",
+                                        "apiVersion": "2017-05-10",
+                                        "name": "[concat('DeployProtection-',uniqueString(parameters('virtualMachineName')))]",
+                                        "type": "Microsoft.Resources/deployments",
+                                        "resourceGroup": "[parameters('vaultResourceGroupName')]",
                                         "properties": {
-                                            "protectedItemType": "[variables('v2VmType')]",
-                                            "policyId": "[resourceId('Microsoft.RecoveryServices/vaults/backupPolicies', variables('recoveryServicesVaultName'), parameters('backupPolicyName') )]",
-                                            "sourceResourceId": "[resourceId(subscription().subscriptionId, parameters('virtualMachineResourceGroup'), 'Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+                                            "mode": "Incremental",
+                                            "expressionEvaluationOptions": {
+                                                "scope": "inner"
+                                            },
+                                            "template": {
+                                                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                                                "contentVersion": "1.0.0.0",
+                                                "parameters": {
+                                                    "location": {
+                                                        "type": "string"
+                                                    },
+                                                    "virtualMachineResourceGroupName": {
+                                                        "type": "string"
+                                                    },
+                                                    "virtualMachineName": {
+                                                        "type": "string"
+                                                    },
+                                                    "backupPolicyName": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "variables": {
+                                                    "backupFabric": "Azure",
+                                                    "v2VmType": "Microsoft.Compute/virtualMachines",
+                                                    "v2VmContainer": "iaasvmcontainer;iaasvmcontainerv2;",
+                                                    "v2Vm": "vm;iaasvmcontainerv2;",
+                                                    "locationNameMap": {
+                                                        "eastus": "eus",
+                                                        "eastus2": "eus2",
+                                                        "centralus": "cus",
+                                                        "westus": "wus",
+                                                        "southcentralus": "scus",
+                                                        "westcentralus": "wcus"
+                                                    },
+                                                    "recoveryServicesVaultName": "[concat(resourceGroup().name, '-', variables('locationNameMap')[parameters('location')], '-RSV')]"
+                                                },
+                                                "resources": [
+                                                    {
+                                                        "type": "Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems",
+                                                        "apiVersion": "2016-06-01",
+                                                        "name": "[concat(variables('recoveryServicesVaultName'), '/', variables('backupFabric'), '/', variables('v2VmContainer'), parameters('virtualMachineResourceGroupName'), ';', parameters('virtualMachineName'), '/', variables('v2Vm'), parameters('virtualMachineResourceGroupName'), ';', parameters('virtualMachineName'))]",
+                                                        "location": "[parameters('location')]",
+                                                        "properties": {
+                                                            "protectedItemType": "[variables('v2VmType')]",
+                                                            "policyId": "[resourceId('Microsoft.RecoveryServices/vaults/backupPolicies', variables('recoveryServicesVaultName'), parameters('backupPolicyName') )]",
+                                                            "sourceResourceId": "[resourceId(subscription().subscriptionId, parameters('virtualMachineResourceGroupName'), 'Microsoft.Compute/virtualMachines', parameters('virtualMachineName'))]"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "parameters": {
+                                                "location": {
+                                                    "value": "[parameters('location')]"
+                                                },
+                                                "virtualMachineResourceGroupName": {
+                                                    "value": "[parameters('virtualMachineResourceGroupName')]"
+                                                },
+                                                "virtualMachineName": {
+                                                    "value": "[parameters('virtualMachineName')]"
+                                                },
+                                                "backupPolicyName": {
+                                                    "value": "[parameters('backupPolicyName')]"
+                                                }
+                                            }
                                         }
                                     }
                                 ]
@@ -110,7 +158,10 @@
                                 "location": {
                                     "value": "[field('location')]"
                                 },
-                                "virtualMachineResourceGroup": {
+                                "vaultResourceGroupName": {
+                                    "value": "[concat(subscription().displayName, parameters('vaultResourceGroupPostfix'))]"
+                                },
+                                "virtualMachineResourceGroupName": {
                                     "value": "[resourceGroup().name]"
                                 },
                                 "virtualMachineName": {
