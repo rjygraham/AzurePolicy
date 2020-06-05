@@ -1,6 +1,12 @@
 {
 	"properties": {
+		"displayName": "Required KeyVault ACLs",
+		"description": "This policy appends required KeyVault ACLs.",
 		"mode": "all",
+		"metadata": {
+			"version": "1.0.0",
+			"category": "Key Vault"
+		},
 		"parameters": {
 			"aadTenantId": {
 				"type": "String",
@@ -26,8 +32,6 @@
 				"type": "array"
 			}
 		},
-		"displayName": "Required KeyVault ACLs",
-		"description": "This policy appends required KeyVault ACLs.",
 		"policyRule": {
 			"if": {
 				"allOf": [
