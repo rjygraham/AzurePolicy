@@ -1,0 +1,60 @@
+{
+    "properties": {
+        "displayName": "Copy Resource Group tag value to another tag",
+        "mode": "Indexed",
+        "description": "Copies the value of one Resource Group tag to another tag on the Resource Group.",
+        "metadata": {
+            "version": "1.0.0",
+            "category": "Tags"
+        },
+        "parameters": {
+            "sourceTagName": {
+                "type": "String",
+                "metadata": {
+                    "displayName": "Source Tag Name",
+                    "description": "Name of the source tag"
+                }
+            },
+            "destinationTagName": {
+                "type": "String",
+                "metadata": {
+                    "displayName": "Destination Tag Value",
+                    "description": "Name of the destination tag"
+                }
+            }
+        },
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Resources/subscriptions/resourceGroups"
+                    },
+                    {
+                        "field": "[concat('tags[', parameters('sourceTagName'), ']')]",
+                        "exists": "true"
+                    },
+                    {
+                        "value": "[concat('tags[', parameters('destinationTagName'), ']')]",
+                        "notEquals": "[resourceGroup().tags[parameters('sourceTagName')]]"
+                    }
+                ]
+            },
+            "then": {
+                "effect": "modify",
+                "details": {
+                    "roleDefinitionIds": [
+                        "/providers/microsoft.authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+                    ],
+                    "operations": [
+                        {
+                            "operation": "addOrReplace",
+                            "field": "[concat('tags[', parameters('destinationTagName'), ']')]",
+                            "value": "[resourceGroup().tags[parameters('sourceTagName')]]"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
