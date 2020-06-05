@@ -1,60 +1,60 @@
 {
-    "properties": {
-        "displayName": "Deny Storage Account IP Rules",
-        "mode": "Indexed",
-        "description": "This policy prevents Storage Accounts from allowing IpRules being set unless a specific tag and value is present.",
-        "metadata": {
-            "version": "1.0.0",
-            "category": "Tags"
-        },
-        "parameters": {
-            "tagName": {
-                "type": "String",
-                "metadata": {
-                    "displayName": "Override Tag Name",
-                    "description": "Name of the tag to override policy."
-                }
-            },
-            "tagValue": {
-                "type": "String",
-                "metadata": {
-                    "displayName": "Override Tag Value",
-                    "description": "Value of the tag to override policy."
-                }
-            }
-        },
-        "policyRule": {
-            "if": {
-                "allOf": [
-                    {
-                        "field": "type",
-                        "equals": "Microsoft.Storage/storageAccounts"
-                    },
-                    {
-                        "count": {
-                            "field": "Microsoft.Storage/storageAccounts/networkAcls.ipRules[*]"
-                        },
-                        "greater": 0
-                    },
-                    {
-                        "not": {
-                            "allOf":[
-                                {
-                                    "field": "[concat('tags[', parameters('tagName'), ']')]",
-                                    "exists": "true"
-                                },
-                                {
-                                    "field": "[concat('tags[', parameters('tagName'), ']')]",
-                                    "contains": "[parameters('tagValue')]"
-                                }
-                            ]
-                        }
-                    }
-                ]
-            },
-            "then": {
-                "effect": "deny"
-            }
-        }
-    }
+	"properties": {
+		"displayName": "Deny Storage Account IP Rules",
+		"description": "This policy prevents Storage Accounts from allowing IpRules being set unless a specific tag and value is present.",
+		"mode": "Indexed",
+		"metadata": {
+			"version": "1.0.0",
+			"category": "Storage"
+		},
+		"parameters": {
+			"tagName": {
+				"type": "String",
+				"metadata": {
+					"displayName": "Override Tag Name",
+					"description": "Name of the tag to override policy."
+				}
+			},
+			"tagValue": {
+				"type": "String",
+				"metadata": {
+					"displayName": "Override Tag Value",
+					"description": "Value of the tag to override policy."
+				}
+			}
+		},
+		"policyRule": {
+			"if": {
+				"allOf": [
+					{
+						"field": "type",
+						"equals": "Microsoft.Storage/storageAccounts"
+					},
+					{
+						"count": {
+							"field": "Microsoft.Storage/storageAccounts/networkAcls.ipRules[*]"
+						},
+						"greater": 0
+					},
+					{
+						"not": {
+							"allOf": [
+								{
+									"field": "[concat('tags[', parameters('tagName'), ']')]",
+									"exists": "true"
+								},
+								{
+									"field": "[concat('tags[', parameters('tagName'), ']')]",
+									"contains": "[parameters('tagValue')]"
+								}
+							]
+						}
+					}
+				]
+			},
+			"then": {
+				"effect": "deny"
+			}
+		}
+	}
 }

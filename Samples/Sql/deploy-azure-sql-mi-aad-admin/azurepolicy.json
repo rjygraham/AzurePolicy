@@ -1,6 +1,12 @@
 {
 	"properties": {
+		"displayName": "Set Azure SQL Managed Instance Azure Active Directory administrator.",
+		"description": "This policy ensures a specific Azure Active Directory user or group is added as administrator to an Azure SQL Managed Instance.",
 		"mode": "all",
+		"metadata": {
+			"version": "1.0.0",
+			"category": "SQL"
+		},
 		"parameters": {
 			"login": {
 				"type": "string",

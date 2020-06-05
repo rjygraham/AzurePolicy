@@ -1,17 +1,23 @@
 {
 	"properties": {
+		"displayName": "Set Azure SQL Server Azure Active Directory administrator.",
+		"description": "This policy ensures a specific Azure Active Directory user or group is added as administrator to an Azure SQL Server.",
 		"mode": "all",
+		"metadata": {
+			"version": "1.0.0",
+			"category": "SQL"
+		},
 		"parameters": {
 			"login": {
 				"type": "string",
 				"metadata": {
-					"description": "Login name of the managed instance administrator."
+					"description": "Login name of the Azure SQL Server administrator."
 				}
 			},
 			"sid": {
 				"type": "string",
 				"metadata": {
-					"description": "SID (Azure Active Directory Object ID) of the managed instance administrator."
+					"description": "SID (Azure Active Directory Object ID) of the Azure SQL Server administrator."
 				}
 			}
 		},

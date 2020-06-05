@@ -1,29 +1,29 @@
 {
-    "properties": {
-        "displayName": "Deny the presence of a tag",
-        "mode": "Indexed",
-        "description": "Denies creation of resource if the specified tag is present.",
-        "metadata": {
-            "version": "1.0.0",
-            "category": "Tags"
-        },
-        "parameters": {
-            "tagName": {
-                "type": "String",
-                "metadata": {
-                    "displayName": "Tag Name",
-                    "description": "Name of the tag to deny"
-                }
-            }
-        },
-        "policyRule": {
-            "if":{
-                "field": "[concat('tags[', parameters('tagName'), ']')]",
-                "exists": "true"
-            },
-            "then": {
-                "effect": "deny"
-            }
-        }
-    }
+	"properties": {
+		"displayName": "Deny the presence of a tag",
+		"description": "Denies creation of resource if the specified tag is present.",
+		"mode": "Indexed",
+		"metadata": {
+			"version": "1.0.0",
+			"category": "Tags"
+		},
+		"parameters": {
+			"tagName": {
+				"type": "String",
+				"metadata": {
+					"displayName": "Tag Name",
+					"description": "Name of the tag to deny"
+				}
+			}
+		},
+		"policyRule": {
+			"if":{
+				"field": "[concat('tags[', parameters('tagName'), ']')]",
+				"exists": "true"
+			},
+			"then": {
+				"effect": "deny"
+			}
+		}
+	}
 }
