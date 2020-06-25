@@ -1,0 +1,64 @@
+{
+	"properties": {
+		"displayName": "Deny Storage Account Blob Public Access",
+		"description": "This policy prevents Storage Accounts from having public blob containers unless a specific tag and value is present.",
+		"mode": "Indexed",
+		"metadata": {
+			"version": "1.0.0",
+			"category": "Storage"
+		},
+		"parameters": {
+			"tagName": {
+				"type": "String",
+				"metadata": {
+					"displayName": "Override Tag Name",
+					"description": "Name of the tag to override policy."
+				}
+			},
+			"tagValue": {
+				"type": "String",
+				"metadata": {
+					"displayName": "Override Tag Value",
+					"description": "Value of the tag to override policy."
+				}
+			}
+		},
+		"policyRule": {
+			"if": {
+				"allOf": [
+					{
+						"field": "type",
+						"equals": "Microsoft.Storage/storageAccounts"
+					},
+					{
+						"field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess",
+						"notEquals": "false"
+					},
+					{
+						"not": {
+							"allOf": [
+								{
+									"field": "[concat('tags[', parameters('tagName'), ']')]",
+									"exists": "true"
+								},
+								{
+									"field": "[concat('tags[', parameters('tagName'), ']')]",
+									"contains": "[parameters('tagValue')]"
+								}
+							]
+						}
+					}
+				]
+			},
+			"then": {
+				"effect": "append",
+				"details": [
+					{
+						"field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess",
+						"value": "false"
+					}
+				]
+			}
+		}
+	}
+}
