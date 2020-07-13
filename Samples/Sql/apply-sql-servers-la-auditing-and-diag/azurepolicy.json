@@ -1,0 +1,181 @@
+{
+	"properties": {
+		"displayName": "Apply audit and diagnostic and settings for Microsoft.Sql/servers to a Log Analytics workspace",
+		"description": "This policy automatically deploys audit and diagnostic settings for Microsoft.Sql/servers to a Log Analytics workspace.",
+		"mode": "all",
+		"metadata": {
+			"version": "1.0.0",
+			"category": "SQL"
+		},
+		"parameters": {
+			"logAnalyticsResourceId": {
+				"type": "string",
+				"metadata": {
+					"displayName": "Log Analytics Resource ID",
+					"description": "Resource ID of the Log Analytics workspace to where the diagnostic and audit logs should be sent."
+				}
+			},
+			"auditActionsAndGroups": {
+				"type": "array",
+				"metadata": {
+					"displayName": "Actions-Groups and Actions to audit",
+					"description": "The recommended set of action groups to use is the following combination - this will audit all the queries and stored procedures executed against the database, as well as successful and failed logins: BATCH_COMPLETED_GROUP, SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP, FAILED_DATABASE_AUTHENTICATION_GROUP. Full list can be found here: https://docs.microsoft.com/en-us/azure/templates/microsoft.sql/2017-03-01-preview/servers/auditingsettings"
+				},
+				"defaultValue": [
+					"SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
+					"FAILED_DATABASE_AUTHENTICATION_GROUP",
+					"BATCH_COMPLETED_GROUP"
+				]
+			}
+		},
+		"policyRule": {
+			"if": {
+				"field": "type",
+				"equals": "Microsoft.Sql/servers"
+			},
+			"then": {
+				"effect": "deployIfNotExists",
+				"details": {
+					"type": "Microsoft.Sql/servers/auditingSettings",
+					"existenceCondition": {
+						"field": "Microsoft.Sql/auditingSettings.state",
+						"equals": "enabled"
+					},
+					"roleDefinitionIds": [
+						"/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+					],
+					"deployment": {
+						"properties": {
+							"mode": "incremental",
+							"template": {
+								"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+								"contentVersion": "1.0.0.0",
+								"parameters": {
+									"location": {
+										"type": "string"
+									},
+									"resourceFullName": {
+										"type": "string"
+									},
+									"logAnalyticsResourceId": {
+										"type": "string"
+									},
+									"auditActionsAndGroups": {
+										"type": "array"
+									}
+								},
+								"variables": {
+									"databaseFullName": "[concat(parameters('resourceFullName'), '/master')]",
+									"diagnosticSettingsName": "LogAnalyticsByPolicy",
+									"diagnosticSettingsResourceId": "[resourceId('Microsoft.Sql/servers/databases/providers/diagnosticSettings', parameters('resourceFullName'), 'master', 'microsoft.insights', variables('diagnosticSettingsName'))]"
+								},
+								"resources": [
+									{
+										"type": "Microsoft.Sql/servers/databases/providers/diagnosticSettings",
+										"apiVersion": "2017-05-01-preview",
+										"name": "[concat(variables('databaseFullName'), '/Microsoft.Insights/', variables('diagnosticSettingsName'))]",
+										"location": "[parameters('location')]",
+										"dependsOn": [],
+										"properties": {
+											"workspaceId": "[parameters('logAnalyticsResourceId')]",
+											"metrics": [
+												{
+													"category": "AllMetrics",
+													"enabled": true,
+													"retentionPolicy": {
+														"enabled": false,
+														"days": 0
+													}
+												}
+											],
+											"logs": [
+												{
+													"category": "SQLInsights",
+													"enabled": true
+												},
+												{
+													"category": "AutomaticTuning",
+													"enabled": true
+												},
+												{
+													"category": "QueryStoreRuntimeStatistics",
+													"enabled": true
+												},
+												{
+													"category": "QueryStoreWaitStatistics",
+													"enabled": true
+												},
+												{
+													"category": "Errors",
+													"enabled": true
+												},
+												{
+													"category": "DatabaseWaitStatistics",
+													"enabled": true
+												},
+												{
+													"category": "Timeouts",
+													"enabled": true
+												},
+												{
+													"category": "Blocks",
+													"enabled": true
+												},
+												{
+													"category": "Deadlocks",
+													"enabled": true
+												},
+												{
+													"category": "DevOpsOperationsAudit",
+													"enabled": true
+												},
+												{
+													"category": "SQLSecurityAuditEvents",
+													"enabled": true
+												}
+											]
+										}
+									},
+									{
+										"type": "Microsoft.Sql/servers/auditingSettings",
+										"apiVersion": "2017-03-01-preview",
+										"name": "[concat(parameters('resourceFullName'), '/Default')]",
+										"dependsOn": [
+											"[variables('diagnosticSettingsResourceId')]"
+										],
+										"properties": {
+											"isDevopsAuditEnabled": false,
+											"state": "Enabled",
+											"auditActionsAndGroups": "[parameters('auditActionsAndGroups')]",
+											"isAzureMonitorTargetEnabled": true
+										}
+									}
+								],
+								"outputs": {
+									"policy": {
+										"type": "string",
+										"value": "[concat(parameters('logAnalyticsResourceId'), 'configured for diagnostic and audit logs for ', ': ', parameters('resourceFullName'))]"
+									}
+								}
+							},
+							"parameters": {
+								"location": {
+									"value": "[field('location')]"
+								},
+								"resourceFullName": {
+									"value": "[field('fullName')]"
+								},
+								"logAnalyticsResourceId": {
+									"value": "[parameters('logAnalyticsResourceId')]"
+								},
+								"auditActionsAndGroups": {
+									"value": "[parameters('auditActionsAndGroups')]"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
