@@ -1,0 +1,57 @@
+{
+	"properties": {
+		"displayName": "Audit/Deny Storage Account Blob Sku Kinds",
+		"description": "This policy audits/denies creation of Storage Accounts that do not match the approved Storage Account SKU Kinds.",
+		"mode": "Indexed",
+		"metadata": {
+			"version": "1.0.0",
+			"category": "Storage"
+		},
+		"parameters": {
+			"effect": {
+				"type": "String",
+				"metadata": {
+					"displayName": "Effect",
+					"description": "Audit, deny, or disable the execution of the policy"
+				},
+				"allowedValues": [
+					"Audit",
+					"Deny",
+					"Disabled"
+				],
+				"defaultValue": "Audit"
+			},
+			"listOfAllowedKinds": {
+				"type": "Array",
+				"metadata": {
+					"description": "The list of allowed kinds of Storage Accounts.",
+					"displayName": "Allowed Storage Account Kinds"
+				},
+				"allowedValues": [
+					"Storage",
+					"StorageV2",
+					"BlobStorage",
+					"FileStorage",
+					"BlockBlobStorage"
+				]
+			}
+		},
+		"policyRule": {
+			"if": {
+				"allOf": [
+					{
+						"field": "type",
+						"equals": "Microsoft.Storage/storageAccounts"
+					},
+					{
+						"field": "kind",
+						"notIn": "[parameters('listOfAllowedKinds')]"
+					}
+				]
+			},
+			"then": {
+				"effect": "[parameters('effect')]"
+			}
+		}
+	}
+}

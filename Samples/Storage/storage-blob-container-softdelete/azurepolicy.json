@@ -1,0 +1,43 @@
+{
+	"properties": {
+		"displayName": "Audit/Deny Storage Account Blob Container Soft Delete",
+		"description": "This policy audits/denies creation of Storage Accounts that do not have blob container soft delete enabled.",
+		"mode": "Indexed",
+		"metadata": {
+			"version": "1.0.0",
+			"category": "Storage"
+		},
+		"parameters": {
+			"effect": {
+				"type": "String",
+				"metadata": {
+					"displayName": "Effect",
+					"description": "Audit, deny, or disable the execution of the policy"
+				},
+				"allowedValues": [
+					"Audit",
+					"Deny",
+					"Disabled"
+				],
+				"defaultValue": "Audit"
+			}
+		},
+		"policyRule": {
+			"if": {
+				"allOf": [
+					{
+						"field": "type",
+						"equals": "Microsoft.Storage/storageAccounts/blobServices"
+					},
+					{
+						"field": "Microsoft.Storage/storageAccounts/blobServices/default.containerDeleteRetentionPolicy.enabled",
+						"notEquals": true
+					}
+				]
+			},
+			"then": {
+				"effect": "[parameters('effect')]"
+			}
+		}
+	}
+}
